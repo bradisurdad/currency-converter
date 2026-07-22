@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Currency Converter</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <script>
+    /* Inline, and in <head>, on purpose.
+     *
+     * This has to run before the browser paints. If it lived in script.js at
+     * the bottom of <body>, a saved dark preference would apply only after the
+     * page had already drawn — a white flash on every load. Keep it tiny;
+     * everything else stays in script.js.
+     */
+    (function () {
+      try {
+        var saved = localStorage.getItem("theme");
+        if (saved === "dark" || saved === "light") {
+          document.documentElement.setAttribute("data-theme", saved);
+        }
+      } catch (e) {
+        /* localStorage throws in some privacy modes — fall through to the OS
+           setting, which CSS handles on its own via prefers-color-scheme. */
+      }
+    })();
+  </script>
+</head>
+<body>
+  <main class="card">
+    <header class="card-header">
+      <div>
+        <h1>Currency Converter</h1>
+        <p class="subtitle">Live rates from the Frankfurter API</p>
+      </div>
+      <!-- Label and icon are set by JS to match the current theme -->
+      <button type="button" id="theme-toggle" class="theme-toggle" title="Switch theme">
+        <span id="theme-icon" aria-hidden="true">🌙</span>
+      </button>
+    </header>
+
+    <!-- On wide screens this becomes two columns: converter left, chart right.
+         It collapses back to one column on narrow screens, and also whenever
+         the chart is hidden (see the :has() rule in style.css). -->
+    <div class="card-body">
+    <div class="panel">
+
+    <!-- novalidate: we do our own validation in JS so we control the messages -->
+    <form id="converter" novalidate>
+      <div class="field">
+        <label for="amount">Amount</label>
+        <input
+          id="amount"
+          name="amount"
+          type="number"
+          inputmode="decimal"
+          step="any"
+          min="0"
+          value="1"
+          placeholder="0.00"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="from">From</label>
+          <!-- Both selects start disabled and are enabled once the currency
+               list finishes loading, so you can't submit against an empty list -->
+          <select id="from" disabled>
+            <option>Loading…</option>
+          </select>
+        </div>
+
+        <!-- Disabled until the currency list loads, like the selects -->
+        <button type="button" id="swap" class="swap" title="Swap currencies" aria-label="Swap currencies" disabled>
+          ⇄
+        </button>
+
+        <div class="field">
+          <label for="to">To</label>
+          <select id="to" disabled>
+            <option>Loading…</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" id="convert" class="convert" disabled>Convert</button>
+    </form>
+
+    <!-- aria-live means screen readers announce results/errors when they appear -->
+    <div id="result" class="result" aria-live="polite"></div>
+    <div id="error" class="error" role="alert"></div>
+
+    </div><!-- /.panel -->
+
+    <!-- Hidden until the first conversion gives us a currency pair to plot -->
+    <section id="chart-section" class="chart-section" hidden>
+      <div class="chart-head">
+        <h2 id="chart-title" class="chart-title">Rate history</h2>
+        <!-- The table is the chart's accessible twin: every plotted value is
+             readable without hovering, or seeing colour at all -->
+        <button type="button" id="table-toggle" class="link-btn"
+                aria-expanded="false" aria-controls="chart-table">Show table</button>
+      </div>
+
+      <div id="chart-status" class="chart-status"></div>
+
+      <figure class="chart-figure">
+        <!-- position:relative anchors the absolutely-positioned tooltip -->
+        <div id="chart-wrap" class="chart-wrap">
+          <!-- tabindex makes the plot keyboard-reachable; arrow keys move the
+               crosshair, so focus gives the same readout as hover -->
+          <svg id="chart" class="chart" role="img" tabindex="0"
+               aria-labelledby="chart-title" aria-describedby="chart-desc"></svg>
+          <div id="chart-tooltip" class="chart-tooltip" role="status" hidden></div>
+        </div>
+        <figcaption id="chart-desc" class="visually-hidden"></figcaption>
+      </figure>
+
+      <div id="chart-table" class="chart-table" hidden></div>
+    </section>
+
+    </div><!-- /.card-body -->
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

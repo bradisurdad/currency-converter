@@ -1,0 +1,622 @@
+/* ---- Theme tokens ------------------------------------------------------ *
+ *
+ * Every colour in this file comes from a variable, so theming is just a matter
+ * of redefining the set. There are three layers, in cascade order:
+ *
+ *   1. :root                              -> light theme, the default
+ *   2. @media (prefers-color-scheme:dark) -> follows the OS when the user
+ *                                            hasn't picked a theme themselves
+ *   3. [data-theme="..."]                 -> an explicit choice from the
+ *                                            toggle, which beats the OS
+ *
+ * Layer 3 needs both "dark" and "light" blocks: picking light on a dark-mode
+ * OS has to override the media query, not just fall back to :root.
+ * ------------------------------------------------------------------------ */
+
+:root {
+  color-scheme: light;
+
+  --bg: #eef2f7;
+  --card: #ffffff;
+  --shadow: rgba(20, 35, 70, 0.10);
+
+  --text: #1a2233;
+  --muted: #6b7688;
+  --label: #4a5568;
+
+  --border: #cfd6e0;
+  --input-bg: #ffffff;
+
+  --accent: #2f6fed;
+  --accent-hover: #2559c8;
+  --accent-text: #ffffff;
+  --accent-soft: #eaf0fe;
+  --accent-soft-hover: #dbe6fd;
+  --accent-soft-border: #c9d8fb;
+
+  --result-bg: #f4f7fd;
+  --result-border: #dde6f8;
+  --result-strong: #1c3f8f;
+
+  --error-bg: #fdf1f0;
+  --error-border: #f5d3cf;
+  --error-text: #a5342a;
+  --invalid: #c0392b;
+
+  --disabled-bg: #f2f4f8;
+  --disabled-text: #98a2b3;
+
+  /* Chart chrome. --series is the one data colour; it is deliberately the
+     same blue as the accent, checked against this surface (see script notes). */
+  --series: #2f6fed;
+  --grid: #e8ecf3;
+  --axis: #cfd6e0;
+}
+
+/* Dark values, defined once and reused by both dark selectors below. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: #12161f;
+    --card: #1b212e;
+    --shadow: rgba(0, 0, 0, 0.45);
+
+    --text: #e6eaf2;
+    --muted: #97a2b8;
+    --label: #b4bfd4;
+
+    --border: #333d52;
+    --input-bg: #232a3a;
+
+    --accent: #4d86f7;
+    --accent-hover: #6699ff;
+    --accent-text: #ffffff;
+    --accent-soft: #1e2a44;
+    --accent-soft-hover: #26365a;
+    --accent-soft-border: #2f4370;
+
+    --result-bg: #1a2233;
+    --result-border: #2b3854;
+    --result-strong: #9dbcff;
+
+    --error-bg: #2c1b1b;
+    --error-border: #5a2f2c;
+    --error-text: #f5a99f;
+    --invalid: #e0685c;
+
+    --disabled-bg: #232a3a;
+    --disabled-text: #5f6b81;
+
+    --series: #4d86f7;
+    --grid: #2a3346;
+    --axis: #333d52;
+  }
+}
+
+/* Explicit dark choice — same values, applied regardless of the OS setting. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #12161f;
+  --card: #1b212e;
+  --shadow: rgba(0, 0, 0, 0.45);
+
+  --text: #e6eaf2;
+  --muted: #97a2b8;
+  --label: #b4bfd4;
+
+  --border: #333d52;
+  --input-bg: #232a3a;
+
+  --accent: #4d86f7;
+  --accent-hover: #6699ff;
+  --accent-text: #ffffff;
+  --accent-soft: #1e2a44;
+  --accent-soft-hover: #26365a;
+  --accent-soft-border: #2f4370;
+
+  --result-bg: #1a2233;
+  --result-border: #2b3854;
+  --result-strong: #9dbcff;
+
+  --error-bg: #2c1b1b;
+  --error-border: #5a2f2c;
+  --error-text: #f5a99f;
+  --invalid: #e0685c;
+
+  --disabled-bg: #232a3a;
+  --disabled-text: #5f6b81;
+
+  --series: #4d86f7;
+  --grid: #2a3346;
+  --axis: #333d52;
+}
+
+/* ---- Base -------------------------------------------------------------- */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.2s, color 0.2s;
+}
+
+/* ---- Card -------------------------------------------------------------- */
+
+.card {
+  width: 100%;
+  max-width: 520px;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 2.25rem;
+  box-shadow: 0 10px 30px var(--shadow);
+  /* Only the theme colour animates. Transitioning max-width would animate the
+     layout itself, and the chart's SVG-to-pixel maths (used to place the
+     tooltip) would be resolving against a width still in motion. */
+  transition: background 0.2s;
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+/* ---- Wide layout ------------------------------------------------------- *
+ *
+ * Below the breakpoint everything is one column — the phone layout, which is
+ * also the right shape for a narrow window. Above it the card widens and the
+ * chart moves alongside the converter instead of below it, so a desktop
+ * window isn't just a tall strip of whitespace either side.
+ * ------------------------------------------------------------------------ */
+
+@media (min-width: 780px) {
+  .card {
+    max-width: 900px;
+    padding: 2.5rem;
+  }
+
+  .card-body {
+    display: grid;
+    /* minmax(0,…) lets both columns shrink; without it, wide content like the
+       chart or a long option label would force the grid past the card edge. */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  /* Side by side, the divider belongs between the columns, not above the chart */
+  .chart-section {
+    margin-top: 0;
+    padding-top: 0;
+    padding-left: 2.5rem;
+    border-top: none;
+    border-left: 1px solid var(--border);
+  }
+
+  /* The chart is hidden until the first conversion. Without this the grid
+     would hold an empty second column and the card would sit oddly wide with
+     the form stranded on the left — so collapse back to the narrow layout
+     until there's actually something to show beside it. */
+  .card:has(#chart-section[hidden]) {
+    max-width: 520px;
+  }
+
+  .card:has(#chart-section[hidden]) .card-body {
+    display: block;
+  }
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+/* ---- Form -------------------------------------------------------------- */
+
+.field {
+  flex: 1;
+  min-width: 0; /* lets flex children shrink instead of overflowing the card */
+  margin-bottom: 1.25rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--label);
+}
+
+input,
+select {
+  width: 100%;
+  padding: 0.7rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+input:focus,
+select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+input:disabled,
+select:disabled,
+button:disabled {
+  background: var(--disabled-bg);
+  color: var(--disabled-text);
+  cursor: not-allowed;
+}
+
+/* Highlights the amount box when JS flags it as invalid */
+input.invalid {
+  border-color: var(--invalid);
+  outline-color: var(--invalid);
+}
+
+/* The two dropdowns plus the swap button sit on one line */
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+/* ---- Buttons ----------------------------------------------------------- */
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+/* Shared look for the two small square icon buttons */
+.swap,
+.theme-toggle {
+  flex: 0 0 auto;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft-border);
+}
+
+.swap:hover:not(:disabled),
+.theme-toggle:hover {
+  background: var(--accent-soft-hover);
+}
+
+.swap {
+  margin-bottom: 1.25rem; /* aligns with the inputs, which have the same margin */
+  padding: 0.7rem 0.8rem;
+  font-size: 1rem;
+}
+
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.convert {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent-text);
+  background: var(--accent);
+  border: none;
+}
+
+.convert:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+/* ---- Output ------------------------------------------------------------ */
+
+.result,
+.error {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+/* :empty keeps the boxes fully invisible until there's something to show,
+   so no blank panel sits under the button on first load */
+.result:empty,
+.error:empty {
+  display: none;
+}
+
+.result {
+  background: var(--result-bg);
+  border: 1px solid var(--result-border);
+}
+
+.amount-out {
+  display: block;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--result-strong);
+}
+
+.rate-line {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.error {
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+}
+
+/* Faded state while a request is in flight */
+.loading {
+  opacity: 0.6;
+}
+
+/* ---- Chart ------------------------------------------------------------- *
+ *
+ * One series, so there's no legend: the heading above the plot names exactly
+ * what's drawn, and a one-swatch legend would just restate it.
+ * ------------------------------------------------------------------------ */
+
+.chart-section {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.chart-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.chart-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--label);
+}
+
+/* Text-style button for the table toggle — it's a view switch, not an action,
+   so it shouldn't compete with Convert */
+.link-btn {
+  padding: 0.15rem 0.25rem;
+  font-size: 0.78rem;
+  color: var(--accent);
+  background: none;
+  border: none;
+  text-decoration: underline;
+}
+
+.chart-status {
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--error-text);
+}
+
+.chart-status:empty {
+  display: none;
+}
+
+.chart-figure {
+  margin: 0;
+}
+
+.chart-wrap {
+  position: relative; /* anchors the tooltip */
+  transition: opacity 0.15s;
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* --- chart marks --- */
+
+/* Hairline, solid, one step off the surface: present but recessive */
+.chart .grid {
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+
+.chart .axis {
+  stroke: var(--axis);
+  stroke-width: 1;
+}
+
+/* The data is the only loud thing on the page */
+.chart .line {
+  fill: none;
+  stroke: var(--series);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* A wash, never a saturated block */
+.chart .area {
+  fill: var(--series);
+  opacity: 0.10;
+  stroke: none;
+}
+
+/* Ring is in the surface colour so the dot stays legible over the line */
+.chart .dot {
+  fill: var(--series);
+  stroke: var(--card);
+  stroke-width: 2;
+}
+
+.chart .crosshair {
+  stroke: var(--axis);
+  stroke-width: 1;
+}
+
+/* Axis text wears text tokens, never the series colour */
+.chart .tick {
+  fill: var(--muted);
+  font-size: 10px;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums; /* ticks align vertically */
+}
+
+.chart .tick-y {
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.chart .tick-x {
+  text-anchor: middle;
+}
+
+/* The one direct label: the latest value, at the line's end */
+.chart .end-label {
+  fill: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  dominant-baseline: middle;
+}
+
+.chart .hit {
+  fill: transparent;
+}
+
+/* --- tooltip --- */
+
+.chart-tooltip {
+  position: absolute;
+  z-index: 2;
+  min-width: 7rem;
+  padding: 0.45rem 0.6rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px var(--shadow);
+  pointer-events: none; /* never let it steal the pointer from the plot */
+  transform: translate(-50%, -115%);
+  white-space: nowrap;
+}
+
+/* Value leads, label follows — the reader already knows the series */
+.chart-tooltip .tip-value {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-tooltip .tip-date {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* --- table view --- */
+
+.chart-table {
+  max-height: 12rem;
+  margin-top: 0.75rem;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.chart-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.chart-table th,
+.chart-table td {
+  padding: 0.35rem 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.chart-table th {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  color: var(--label);
+  font-size: 0.72rem;
+}
+
+.chart-table td:last-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums; /* a column of numbers, so align them */
+}
+
+.chart-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Available to screen readers, invisible on screen */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Respect users who've asked the OS to reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
