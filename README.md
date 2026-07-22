@@ -1,6 +1,6 @@
 # Currency Converter
 
-A small currency converter built with plain HTML, CSS, and vanilla JavaScript —
+A small currency converter built with plain HTML, CSS, and vanilla JavaScript -
 no frameworks, no build step, no dependencies. Rates come from the free
 [Frankfurter API](https://frankfurter.dev), which needs no API key.
 
